@@ -16,24 +16,6 @@ This project demonstrates **key OS concepts** in a visual and interactive way.
 ## 🌐 Live Demo
 👉 [View Project on GitHub Pages](https://hasrh01.github.io/OS-Simulator/)  
 
----
-
-## 🖼️ Screenshots
-
-### 🔹 Dashboard (Main Page)
-![Dashboard Screenshot](assets/screenshots/dashboard.png)
-
-### 🔹 CPU Scheduling (Q3)
-![CPU Scheduling Screenshot](assets/screenshots/scheduling.png)
-
-### 🔹 Real-Time Scheduling (Q5)
-![RMS & EDF Screenshot](assets/screenshots/realtime.png)
-
-### 🔹 Synchronization Problems (Q7)
-![Synchronization Screenshot](assets/screenshots/sync.png)
-
----
-
 ## 👨‍💻 Team Members
 - **Harshit Gupta** – Q1 & Q3  
   🔗 [LinkedIn](https://linkedin.com/in/harshit-gupta-6b856533b) | 💻 [GitHub](https://github.com/hasrh01)  
@@ -73,4 +55,5 @@ This project demonstrates **key OS concepts** in a visual and interactive way.
 ---
 
 🔮 *Made with hard work, teamwork, and a touch of futuristic magic.*
+
 
