@@ -14,7 +14,7 @@ This project demonstrates **key OS concepts** in a visual and interactive way.
 ---
 
 ## 🌐 Live Demo
-👉 [View Project on GitHub Pages](https://YOUR-USERNAME.github.io/OS-Simulator/)  
+👉 [View Project on GitHub Pages](https://hasrh01.github.io/OS-Simulator/)  
 
 ---
 
@@ -73,3 +73,4 @@ This project demonstrates **key OS concepts** in a visual and interactive way.
 ---
 
 🔮 *Made with hard work, teamwork, and a touch of futuristic magic.*
+
