@@ -1,0 +1,151 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+  <meta charset="UTF-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1.0">
+  <title>Q1 – OS Concepts Simulator</title>
+  <link href="https://fonts.googleapis.com/css2?family=Orbitron:wght@600&display=swap" rel="stylesheet">
+  <style>
+    body {
+      margin: 0;
+      font-family: 'Orbitron', sans-serif;
+      background: radial-gradient(circle at top, #0d0d2b, #000);
+      color: #e0e0e0;
+      text-align: center;
+    }
+    header {
+      padding: 1.5em;
+      text-align: center;
+      color: cyan;
+      text-shadow: 0 0 15px cyan, 0 0 25px #0ff;
+      border-bottom: 2px solid cyan;
+    }
+    section {
+      margin: 2em auto;
+      padding: 2em;
+      max-width: 900px;
+      background: rgba(20,20,40,0.85);
+      border: 2px solid cyan;
+      border-radius: 12px;
+      box-shadow: 0 0 20px cyan;
+    }
+    h2 { color: cyan; text-shadow: 0 0 10px cyan; }
+    ol, ul { text-align: left; max-width: 600px; margin: auto; }
+    .btn {
+      padding: 0.6em 1.2em;
+      margin: 0.5em;
+      border: 2px solid cyan;
+      background: black;
+      color: cyan;
+      cursor: pointer;
+      transition: 0.3s;
+    }
+    .btn:hover { background: cyan; color: black; box-shadow: 0 0 20px cyan; }
+    #syscall-output {
+      margin-top: 1em;
+      padding: 1em;
+      border: 1px solid cyan;
+      background: #111;
+      border-radius: 6px;
+    }
+    a.back {
+      display: inline-block;
+      margin-top: 1em;
+      color: cyan;
+      text-decoration: none;
+      border: 1px solid cyan;
+      padding: 0.5em 1em;
+      border-radius: 6px;
+    }
+    a.back:hover { background: cyan; color: black; }
+  </style>
+</head>
+<body>
+
+<header>
+  <h1>⚡ Q1: Booting, OS Types & System Calls</h1>
+</header>
+
+<section>
+  <h2>🚀 Booting Process</h2>
+  <ol>
+    <li>Power On → BIOS/UEFI starts</li>
+    <li>Bootloader loads OS kernel</li>
+    <li>Kernel initializes hardware & memory</li>
+    <li>Init/systemd launches user processes</li>
+  </ol>
+</section>
+
+<section>
+  <h2>🛰️ Types of Operating Systems</h2>
+  <ul>
+    <li>Batch OS</li>
+    <li>Multiprogramming OS</li>
+    <li>Multitasking / Time-Sharing OS</li>
+    <li>Real-Time OS</li>
+    <li>Distributed OS</li>
+    <li>Embedded OS</li>
+  </ul>
+</section>
+
+<section>
+  <h2>🖥️ System Calls Simulator</h2>
+  <button class="btn" onclick="showSyscall('process')">Process Management</button>
+  <button class="btn" onclick="showSyscall('file')">File Management</button>
+  <button class="btn" onclick="showSyscall('device')">Device Management</button>
+  <div id="syscall-output"><em>Select a category to simulate system calls.</em></div>
+</section>
+
+<section>
+  <a href="index.html" class="back">⬅ Back to Dashboard</a>
+</section>
+
+<script>
+function showSyscall(type) {
+  const out = document.getElementById('syscall-output');
+  if (type === 'process') {
+    out.innerHTML = "<b>Process Calls:</b> fork(), exec(), wait(), exit()";
+  } else if (type === 'file') {
+    out.innerHTML = "<b>File Calls:</b> open(), read(), write(), close()";
+  } else if (type === 'device') {
+    out.innerHTML = "<b>Device Calls:</b> ioctl(), read(), write()";
+  }
+}
+</script>
+<!-- Documentation Panel -->
+<section class="panel" style="margin:2em auto;max-width:900px;text-align:left;">
+  <h2 style="cursor:pointer" onclick="toggleDoc(this)">
+    📄 Documentation <span style="font-size:0.8em;color:#aaa">(click to expand)</span>
+  </h2>
+<div class="doc-content">
+    <p><b>Approach:</b> We made this page to explain the booting sequence, list different operating system types, and give an interactive demo of system calls. Instead of static notes, the buttons simulate the different call categories.</p>
+    <p><b>Logic:</b> Booting is displayed as fixed ordered steps. OS types are shown in a simple list. The system call simulator uses JavaScript buttons that update output text to show examples for process, file, and device management.</p>
+    <p><b>Observations:</b> The booting process is strictly ordered, system calls are the bridge between user programs and the kernel, and presenting OS types together gives a clear comparison.</p>
+  </div>
+</section>
+
+<style>
+.doc-content {
+  max-height: 0;
+  overflow: hidden;
+  transition: max-height 0.6s ease, padding 0.3s ease;
+  font-size: 0.95em;
+  line-height: 1.6;
+  color: #cde;
+  padding: 0 0.5em;
+}
+.doc-content.open {
+  max-height: 500px; /* enough to fit the content */
+  padding: 0.8em 0.5em;
+}
+</style>
+
+<script>
+function toggleDoc(header){
+  const content = header.nextElementSibling;
+  content.classList.toggle("open");
+}
+</script>
+
+</body>
+</html>

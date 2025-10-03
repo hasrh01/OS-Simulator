@@ -1,0 +1,215 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+  <meta charset="UTF-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1.0">
+  <title>Q3 – CPU Scheduling Simulator</title>
+  <link href="https://fonts.googleapis.com/css2?family=Orbitron:wght@600&display=swap" rel="stylesheet">
+  <style>
+    body {
+      margin: 0;
+      font-family: 'Orbitron', sans-serif;
+      background: radial-gradient(circle at top, #0d0d2b, #000);
+      color: #e0e0e0;
+      text-align: center;
+    }
+    header {
+      padding: 1.5em;
+      color: cyan;
+      text-shadow: 0 0 15px cyan, 0 0 25px #0ff;
+      border-bottom: 2px solid cyan;
+    }
+    section {
+      margin: 2em auto;
+      padding: 2em;
+      max-width: 900px;
+      background: rgba(20,20,40,0.85);
+      border: 2px solid cyan;
+      border-radius: 12px;
+      box-shadow: 0 0 20px cyan;
+    }
+    h2 { color: cyan; text-shadow: 0 0 10px cyan; }
+    textarea {
+      width: 80%; max-width: 500px;
+      padding: 0.5em;
+      border: 2px solid cyan;
+      background: #111;
+      color: cyan;
+    }
+    .btn {
+      padding: 0.6em 1.2em;
+      margin: 0.5em;
+      border: 2px solid cyan;
+      background: black;
+      color: cyan;
+      cursor: pointer;
+      transition: 0.3s;
+    }
+    .btn:hover { background: cyan; color: black; box-shadow: 0 0 20px cyan; }
+    table, th, td {
+      border: 1px solid cyan;
+      border-collapse: collapse;
+      padding: 0.5em;
+      margin: auto;
+      margin-top: 1em;
+    }
+    th { background: rgba(0,255,255,0.2); }
+    .gantt-chart {
+      display: flex;
+      margin: 1em auto;
+      border: 1px solid cyan;
+      height: 40px;
+      width: 80%;
+      border-radius: 6px;
+      overflow: hidden;
+    }
+    .gantt-segment {
+      border-right: 1px solid #111;
+      text-align: center;
+      color: black;
+      font-weight: bold;
+      display: flex;
+      align-items: center;
+      justify-content: center;
+    }
+    a.back {
+      display: inline-block;
+      margin-top: 1em;
+      color: cyan;
+      text-decoration: none;
+      border: 1px solid cyan;
+      padding: 0.5em 1em;
+      border-radius: 6px;
+    }
+    a.back:hover { background: cyan; color: black; }
+  </style>
+</head>
+<body>
+
+<header>
+  <h1>⚡ Q3: CPU Scheduling Simulator (FCFS & SJF)</h1>
+</header>
+
+<section>
+  <h2>🚀 Enter Process Data</h2>
+  <textarea id="process-input" rows="5" placeholder="Format: P1,0,5\nP2,1,3\nP3,2,8"></textarea><br>
+  <button class="btn" onclick="runScheduling('fcfs')">Run FCFS</button>
+  <button class="btn" onclick="runScheduling('sjf')">Run SJF</button>
+  <div id="results"></div>
+</section>
+
+<section>
+  <a href="index.html" class="back">⬅ Back to Dashboard</a>
+</section>
+
+<script>
+  function parseInput(text) {
+    return text.trim().split('\n').map(line => {
+      const [pid, at, bt] = line.split(',').map(x => x.trim());
+      return { pid, arrival: +at, burst: +bt };
+    });
+  }
+
+  function runScheduling(type) {
+    const procs = parseInput(document.getElementById('process-input').value);
+    if (procs.length === 0) { alert("Enter processes first!"); return; }
+    let result = (type === 'fcfs') ? fcfs(procs) : sjf(procs);
+    displayResults(result, type.toUpperCase());
+  }
+
+  function fcfs(procs) {
+    procs.sort((a, b) => a.arrival - b.arrival);
+    let time = 0;
+    for (let p of procs) {
+      if (time < p.arrival) time = p.arrival;
+      p.start = time; p.finish = time + p.burst;
+      p.turnaround = p.finish - p.arrival;
+      p.waiting = p.start - p.arrival;
+      time = p.finish;
+    }
+    return procs;
+  }
+
+  function sjf(procs) {
+    let time = 0, completed = [];
+    let remaining = [...procs];
+    while (remaining.length > 0) {
+      let ready = remaining.filter(p => p.arrival <= time);
+      if (ready.length === 0) { time++; continue; }
+      ready.sort((a, b) => a.burst - b.burst);
+      let p = ready[0];
+      if (time < p.arrival) time = p.arrival;
+      p.start = time; p.finish = time + p.burst;
+      p.turnaround = p.finish - p.arrival;
+      p.waiting = p.start - p.arrival;
+      time = p.finish;
+      completed.push(p);
+      remaining = remaining.filter(x => x !== p);
+    }
+    return completed;
+  }
+
+  function displayResults(procs, algoName) {
+    let html = `<h3>${algoName} Results</h3><table><tr><th>PID</th><th>Arrival</th><th>Burst</th><th>Start</th><th>Finish</th><th>Waiting</th><th>Turnaround</th></tr>`;
+    let totalWT = 0, totalTAT = 0;
+    for (let p of procs) {
+      html += `<tr><td>${p.pid}</td><td>${p.arrival}</td><td>${p.burst}</td><td>${p.start}</td><td>${p.finish}</td><td>${p.waiting}</td><td>${p.turnaround}</td></tr>`;
+      totalWT += p.waiting; totalTAT += p.turnaround;
+    }
+    html += `</table><p><b>Average WT:</b> ${(totalWT/procs.length).toFixed(2)} | <b>Average TAT:</b> ${(totalTAT/procs.length).toFixed(2)}</p>`;
+
+    // Gantt chart
+    const chart = document.createElement('div');
+    chart.className = 'gantt-chart';
+    const total = procs.reduce((sum, p) => sum + p.burst, 0);
+    for (const p of procs) {
+      const seg = document.createElement('div');
+      seg.className = 'gantt-segment';
+      seg.style.width = (p.burst / total * 100) + '%';
+      seg.style.background = '#0ff';
+      seg.innerText = p.pid;
+      chart.appendChild(seg);
+    }
+    html += `<h3>Gantt Chart (${algoName})</h3>`;
+    document.getElementById('results').innerHTML = html;
+    document.getElementById('results').appendChild(chart);
+  }
+</script>
+<!-- Documentation Panel -->
+<section class="panel" style="margin:2em auto;max-width:900px;text-align:left;">
+  <h2 style="cursor:pointer" onclick="toggleDoc(this)">
+    📄 Documentation <span style="font-size:0.8em;color:#aaa">(click to expand)</span>
+  </h2>
+  <div class="doc-content">
+    <p><b>Approach:</b> We built a small scheduling simulator where the user enters processes with arrival and burst times. The simulator runs both First-Come First-Served (FCFS) and Shortest Job First (SJF).</p>
+    <p><b>Logic:</b> For FCFS, jobs are simply sorted by arrival time. For SJF, at each scheduling decision, the job with the shortest burst among ready processes is picked. Waiting and turnaround times are calculated and shown in a table. A Gantt chart is also generated for visualization.</p>
+    <p><b>Observations:</b> From the results we saw that SJF usually reduces average waiting and turnaround time compared to FCFS, but it requires advance knowledge of burst length. The visual chart makes it easier to compare both algorithms side by side.</p>
+  </div>
+</section>
+
+<style>
+.doc-content {
+  max-height: 0;
+  overflow: hidden;
+  transition: max-height 0.6s ease, padding 0.3s ease;
+  font-size: 0.95em;
+  line-height: 1.6;
+  color: #cde;
+  padding: 0 0.5em;
+}
+.doc-content.open {
+  max-height: 500px; /* enough to fit the content */
+  padding: 0.8em 0.5em;
+}
+</style>
+
+<script>
+function toggleDoc(header){
+  const content = header.nextElementSibling;
+  content.classList.toggle("open");
+}
+</script>
+
+
+</body>
+</html>

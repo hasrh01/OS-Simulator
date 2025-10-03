@@ -1,0 +1,217 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+  <meta charset="UTF-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1.0">
+  <title>OS Simulator – Group Project</title>
+  <link href="https://fonts.googleapis.com/css2?family=Orbitron:wght@600&display=swap" rel="stylesheet">
+  <style>
+    body {
+      margin: 0;
+      font-family: 'Orbitron', sans-serif;
+      background: radial-gradient(circle at top, #0d0d2b, #000);
+      color: #e0e0e0;
+      overflow-x: hidden;
+    }
+
+    /* Starry Background */
+    body::before {
+      content: "";
+      position: fixed;
+      top: 0; left: 0;
+      width: 100%; height: 100%;
+background: url("https://www.transparenttextures.com/patterns/stardust.png") repeat;
+      animation: starScroll 200s linear infinite;
+      z-index: -2;
+    }
+    @keyframes starScroll {
+      from { background-position: 0 0; }
+      to { background-position: 10000px 10000px; }
+    }
+
+    header {
+      padding: 2em;
+      text-align: center;
+      color: cyan;
+      text-shadow: 0 0 15px cyan, 0 0 30px #0ff;
+      border-bottom: 2px solid cyan;
+    }
+    header h1 { margin: 0; font-size: 2.5em; }
+
+    .grid {
+      display: grid;
+      grid-template-columns: repeat(auto-fit, minmax(280px, 1fr));
+      gap: 2em;
+      padding: 3em;
+    }
+
+    .card {
+      background: rgba(0, 0, 0, 0.7);
+      border: 2px solid cyan;
+      border-radius: 12px;
+      padding: 2em;
+      text-align: center;
+      box-shadow: 0 0 20px #0ff;
+      transition: transform 0.3s, box-shadow 0.3s;
+    }
+    .card:hover {
+      transform: scale(1.05);
+      box-shadow: 0 0 30px magenta;
+    }
+    .card h2 {
+      margin-top: 0;
+      color: #0ff;
+      text-shadow: 0 0 10px #0ff;
+    }
+    .card p { font-size: 1em; }
+    .card a {
+      display: inline-block;
+      margin-top: 1em;
+      padding: 0.6em 1.2em;
+      border: 2px solid cyan;
+      color: cyan;
+      text-decoration: none;
+      border-radius: 6px;
+      transition: 0.3s;
+    }
+    .card a:hover {
+      background: cyan;
+      color: black;
+      box-shadow: 0 0 20px cyan;
+    }
+
+    footer {
+      text-align: center;
+      padding: 1em;
+      border-top: 1px solid cyan;
+      margin-top: 2em;
+      font-size: 0.9em;
+    }
+  </style>
+</head>
+<body>
+
+<header>
+  <h1>🚀 OS Simulator Dashboard</h1>
+  <p>Odd Section – Q1, Q3, Q5, Q7</p>
+</header>
+
+<div class="grid">
+  <div class="card">
+    <h2>Booting & OS Types</h2>
+    <p>Understand the booting sequence, OS types, and explore system call examples.</p>
+    <a href="q1.html">Launch Simulator</a>
+  </div>
+  <div class="card">
+    <h2>CPU Scheduling</h2>
+    <p>Simulate FCFS and SJF scheduling. Generate Gantt charts and process metrics.</p>
+    <a href="q3.html">Launch Simulator</a>
+  </div>
+  <div class="card">
+    <h2>Real-Time Scheduling</h2>
+    <p>Interactive RMS and EDF scheduling demo with threading simulation.</p>
+    <a href="q5.html">Launch Simulator</a>
+  </div>
+  <div class="card">
+    <h2>Synchronization</h2>
+    <p>Classic concurrency problems: Producer-Consumer, Dining Philosophers, Readers-Writers.</p>
+    <a href="q7.html">Launch Simulator</a>
+  </div>
+</div>
+<section class="panel" style="margin:2em auto;max-width:900px;text-align:center;">
+  <h2 style="color:cyan;text-shadow:0 0 12px cyan;">ℹ️ About This Project</h2>
+  <p style="color:#cde;font-size:0.95em;line-height:1.6;">
+    This OS Simulator is a group project created for the Operating Systems practical.  
+    It demonstrates key concepts like <b>Booting process, OS types, System Calls</b>,  
+    <b>CPU Scheduling (FCFS & SJF)</b>, <b>Real-Time Scheduling (RMS & EDF)</b>, and  
+    <b>Synchronization problems (Producer–Consumer, Dining Philosophers, Readers–Writers)</b>.  
+    <br><br>
+    Our aim was to make the concepts interactive and easy to visualize instead of just reading theory.
+  </p>
+</section>
+
+<footer>
+  <p>Submitted by: Harshit Gupta & Anurag Anjana | SAP ids: 590017909 & 590014360 </p>
+   <div style="margin-top:0.8em;">
+    <span style="cursor:pointer;margin:0 15px;font-size:1.5em;color:cyan;" onclick="openModal('linkedin')">🔗 LinkedIn</span>
+    <span style="cursor:pointer;margin:0 15px;font-size:1.5em;color:cyan;" onclick="openModal('github')">💻 GitHub</span>
+  </div>
+  <p style="margin-top:0.8em;font-size:0.85em;color:#aaa;">
+   Built with HTML • CSS • JS
+  </p>
+</footer>
+<!-- Popup Modal -->
+<div id="modal" style="
+  display:none; position:fixed; top:0; left:0; width:100%; height:100%;
+  background:rgba(0,0,0,0.85); color:#e0e0e0; text-align:center; 
+  z-index:1000; padding-top:8%;">
+  
+  <div style="
+    background:rgba(20,20,40,0.95); border:2px solid cyan; 
+    display:inline-block; padding:2em; border-radius:12px; 
+    box-shadow:0 0 20px cyan; max-width:500px; width:90%;">
+    
+    <h2 id="modal-title" style="color:cyan;text-shadow:0 0 10px cyan;">Profiles</h2>
+
+    <!-- Member tabs -->
+    <div style="margin:1em 0;">
+      <button class="tab-btn" onclick="showMember('harshit')">Harshit</button>
+      <button class="tab-btn" onclick="showMember('anurag')">Anurag</button>
+    </div>
+
+    <!-- Harshit content -->
+    <div id="harshit" class="member-content">
+      <p><b>Name:</b> Harshit Gupta</p>
+      <p><b>LinkedIn:</b> <a href="https://linkedin.com/in/harshit-gupta-6b856533b" target="_blank" style="color:cyan;">linkedin.com/in/harshit-gupta</a></p>
+      <p><b>GitHub:</b> <a href="https://github.com/hasrh01" target="_blank" style="color:cyan;">github.com/hasrh01</a></p>
+    </div>
+
+    <!-- Anurag content -->
+    <div id="anurag" class="member-content" style="display:none;">
+      <p><b>Name:</b> Anurag Anjana</p>
+      <p><b>LinkedIn:</b> <a href="http://linkedin.com/in/anurag-anjana-2b4709332" target="_blank" style="color:cyan;">linkedin.com/in/anurag-anjana</a></p>
+      <p><b>GitHub:</b> <a href="http://github.com/anuraganjana21" target="_blank" style="color:cyan;">github.com/anuraganjana21</a></p>
+    </div>
+
+    <button onclick="closeModal()" style="
+      margin-top:1.5em;padding:.6em 1.2em;border:2px solid cyan;
+      background:black;color:cyan;border-radius:8px;cursor:pointer;">
+      Close
+    </button>
+  </div>
+</div>
+
+<style>
+.tab-btn {
+  padding:0.4em 1em;
+  margin:0 0.3em;
+  border:2px solid cyan;
+  background:black;
+  color:cyan;
+  cursor:pointer;
+  border-radius:6px;
+  transition:0.3s;
+}
+.tab-btn:hover { background:cyan; color:black; box-shadow:0 0 15px cyan; }
+</style>
+
+<script>
+function openModal(type){
+  document.getElementById("modal").style.display="block";
+  document.getElementById("modal-title").innerText = type==="linkedin" ? "LinkedIn Profiles" : "GitHub Profiles";
+  // default: show Harshit first
+  showMember("harshit");
+}
+function closeModal(){
+  document.getElementById("modal").style.display="none";
+}
+function showMember(member){
+  document.querySelectorAll(".member-content").forEach(div=>div.style.display="none");
+  document.getElementById(member).style.display="block";
+}
+</script>
+
+</script>
+
+</body>
+</html>

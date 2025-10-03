@@ -1,0 +1,460 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+  <meta charset="utf-8" />
+  <meta name="viewport" content="width=device-width,initial-scale=1" />
+  <title>Q7 – Synchronization Simulator</title>
+  <link href="https://fonts.googleapis.com/css2?family=Orbitron:wght@600&display=swap" rel="stylesheet">
+  <style>
+    :root{
+      --accent: #00f6ff; /* cyan */
+      --bg1: #0d0d2b;
+      --panel: rgba(20,20,40,0.9);
+      --glass-border: 1px solid rgba(0,246,255,0.25);
+      --glow: 0 0 16px rgba(0,246,255,0.2);
+    }
+    html,body{height:100%;margin:0;font-family:'Orbitron',sans-serif;background:radial-gradient(circle at top,var(--bg1),#000);color:#e6f7ff;}
+    header{padding:1.5rem 1rem;text-align:center;color:var(--accent);text-shadow:0 0 12px var(--accent);border-bottom:1px solid rgba(0,246,255,0.06)}
+    main{max-width:1100px;margin:2rem auto;padding:0 1rem;}
+    .panel{background:var(--panel);border-radius:12px;padding:1.25rem;margin-bottom:1.5rem;border:2px solid rgba(0,246,255,0.08);box-shadow:var(--glow)}
+    h2{color:var(--accent);margin:0 0 0.5rem 0}
+    .row{display:flex;gap:1rem;flex-wrap:wrap}
+    .col{flex:1;min-width:260px}
+    .controls{display:flex;gap:.6rem;flex-wrap:wrap;align-items:center}
+    input[type="range"]{width:220px}
+    input[type="number"], input[type="text"], select{padding:.45rem;border-radius:6px;background:#071224;border:1px solid rgba(0,246,255,0.12);color:var(--accent);min-width:90px}
+    button.btn{background:transparent;border:1.5px solid var(--accent);color:var(--accent);padding:.55rem .9rem;border-radius:8px;cursor:pointer;transition:all .18s;box-shadow:0 0 12px rgba(0,246,255,0.06)}
+    button.btn:hover{background:var(--accent);color:#001;box-shadow:0 0 26px rgba(0,246,255,0.18)}
+    .console{background:#041022;border:1px solid rgba(0,246,255,0.08);border-radius:8px;padding:0.8rem;height:260px;overflow:auto;color:#8ff;font-family:monospace;font-size:0.95rem}
+    .buffer-grid{display:flex;gap:8px;flex-wrap:wrap;justify-content:flex-start}
+    .cell{width:56px;height:56px;border-radius:8px;display:flex;align-items:center;justify-content:center;border:2px dashed rgba(255,255,255,0.06);background:rgba(255,255,255,0.02);color:var(--accent);font-weight:700}
+    .cell.filled{border:2px solid rgba(0,255,150,0.9);background:linear-gradient(180deg,rgba(0,255,150,0.12),rgba(0,255,150,0.04));color:#001}
+    .status{font-size:.95rem}
+    table{width:100%;border-collapse:collapse;color:var(--accent)}
+    th,td{padding:.45rem;border:1px solid rgba(0,246,255,0.06);text-align:center}
+    .small{font-size:.85rem;color:#9fb}
+    .back{display:inline-block;margin-top:0.6rem;color:var(--accent);text-decoration:none;border:1px solid rgba(0,246,255,0.12);padding:.4rem .7rem;border-radius:7px}
+    .back:hover{background:var(--accent);color:#001}
+    @media(max-width:680px){ .row{flex-direction:column} .buffer-grid{justify-content:center} }
+  </style>
+</head>
+<body>
+  <header>
+    <h1>Q7 — Synchronization Problems Simulator</h1>
+<div class="small">Simulations for Producer–Consumer, Dining Philosophers, and Readers–Writers problems</div>
+  </header>
+
+  <main>
+    <!-- PRODUCER-CONSUMER -->
+    <section class="panel" id="pc-panel">
+      <div class="row" style="align-items:center;justify-content:space-between">
+        <div>
+          <h2>Producer — Consumer</h2>
+          <div class="small">Toggle semaphore protection to see race conditions vs safe operation</div>
+        </div>
+        <div class="controls">
+          <label class="small">Buffer size: <strong id="pc-size-label">5</strong></label>
+          <input id="pc-size" type="range" min="3" max="10" value="5" oninput="document.getElementById('pc-size-label').textContent=this.value">
+          <button class="btn" onclick="startPC(false)">Run (No Semaphore)</button>
+          <button class="btn" onclick="startPC(true)">Run (With Semaphore)</button>
+          <button class="btn" onclick="stopPC()">Stop</button>
+        </div>
+      </div>
+
+      <div class="row" style="margin-top:1rem">
+        <div class="col">
+          <div class="small">Buffer</div>
+          <div id="pc-buffer" class="buffer-grid" style="margin-top:.6rem"></div>
+        </div>
+        <div class="col">
+          <div class="small">Activity Log</div>
+          <div id="pc-log" class="console"></div>
+        </div>
+      </div>
+    </section>
+
+    <!-- DINING PHILOSOPHERS -->
+    <section class="panel" id="dp-panel">
+      <div class="row" style="align-items:center;justify-content:space-between">
+        <div>
+          <h2>Dining Philosophers</h2>
+          <div class="small">See deadlock risk and the asymmetric solution</div>
+        </div>
+        <div class="controls">
+          <button class="btn" onclick="startPhilosophers(false)">Run (Naive)</button>
+          <button class="btn" onclick="startPhilosophers(true)">Run (Asymmetric)</button>
+          <button class="btn" onclick="stopPhilosophers()">Stop</button>
+        </div>
+      </div>
+
+      <div class="row" style="margin-top:1rem">
+        <div class="col">
+          <div class="small">Philosophers Status</div>
+          <table>
+            <thead><tr><th>Philosopher</th><th>State</th><th>Left Fork</th><th>Right Fork</th></tr></thead>
+            <tbody id="phil-status"></tbody>
+          </table>
+        </div>
+
+        <div class="col">
+          <div class="small">Activity Log</div>
+          <div id="phil-log" class="console"></div>
+        </div>
+      </div>
+    </section>
+
+    <!-- READERS-WRITERS -->
+    <section class="panel" id="rw-panel">
+      <div class="row" style="align-items:center;justify-content:space-between">
+        <div>
+          <h2>Readers — Writers</h2>
+          <div class="small">Compare unsafe access vs read-write lock</div>
+        </div>
+        <div class="controls">
+          <button class="btn" onclick="startRW(false)">Run (No Lock)</button>
+          <button class="btn" onclick="startRW(true)">Run (With Lock)</button>
+          <button class="btn" onclick="stopRW()">Stop</button>
+        </div>
+      </div>
+
+      <div class="row" style="margin-top:1rem">
+        <div class="col">
+          <div class="small">Database Status</div>
+          <div class="panel" style="background:transparent;padding:.8rem;border:1px solid rgba(0,246,255,0.06);">
+            <div class="small">Current value: <strong id="rw-value">0</strong></div>
+            <div class="small">Active readers: <strong id="rw-readers">0</strong></div>
+            <div class="small">Active writers: <strong id="rw-writers">0</strong></div>
+          </div>
+        </div>
+
+        <div class="col">
+          <div class="small">Activity Log</div>
+          <div id="rw-log" class="console"></div>
+        </div>
+      </div>
+    </section>
+
+    <div style="text-align:center;margin-top:1rem">
+      <a class="back" href="index.html">⬅ Back to Dashboard</a>
+    </div>
+  </main>
+
+  <script>
+  /**************************************************************************
+   * Q7: Synchronization problems (Producer-Consumer, Dining Philosophers,
+   * Readers-Writers)
+   *
+   * Converted to neon space theme, removed Bootstrap, fixed template-string bugs.
+   * Behavior preserved and improved UX for logs and buffer visualization.
+   **************************************************************************/
+
+  // -------------------- PRODUCER-CONSUMER --------------------
+  let pcBuffer = [];
+  let pcSize = parseInt(document.getElementById('pc-size').value);
+  let pcRunning = false;
+  let pcTimers = [];
+
+  function startPC(useSemaphore) {
+    stopPC();
+    pcSize = parseInt(document.getElementById('pc-size').value);
+    pcBuffer = [];
+    pcRunning = true;
+    const log = document.getElementById('pc-log');
+    log.innerHTML = useSemaphore
+      ? '<span style="color:#8f8">✓ Running WITH Semaphore Protection</span><br>'
+      : '<span style="color:#f88">⚠ Running WITHOUT Semaphore (Race possible)</span><br>';
+
+    // Simple semaphore variables
+    let mutex = 1, empty = pcSize, full = 0;
+
+    function producer(id) {
+      if (!pcRunning) return;
+      if (useSemaphore) {
+        if (empty > 0 && mutex === 1) {
+          mutex = 0;
+          empty--;
+          const item = Math.floor(Math.random() * 900) + 100;
+          pcBuffer.push(item);
+          log.innerHTML += `Producer-${id}: Produced ${item} | Buffer: ${pcBuffer.length}/${pcSize}<br>`;
+          full++; mutex = 1;
+        } else {
+          log.innerHTML += `<span style="color:orange">Producer-${id}: Buffer full / locked, waiting...</span><br>`;
+        }
+      } else {
+        if (pcBuffer.length < pcSize) {
+          const item = Math.floor(Math.random() * 900) + 100;
+          pcBuffer.push(item);
+          log.innerHTML += `Producer-${id}: Produced ${item} | Buffer: ${pcBuffer.length}/${pcSize}<br>`;
+        } else {
+          // Race: simulate overflow risk
+          log.innerHTML += `<span style="color:red">Producer-${id}: ERROR - Buffer overflow risk!</span><br>`;
+        }
+      }
+      updatePCDisplay();
+      log.scrollTop = log.scrollHeight;
+    }
+
+    function consumer(id) {
+      if (!pcRunning) return;
+      if (useSemaphore) {
+        if (full > 0 && mutex === 1) {
+          mutex = 0;
+          full--;
+          const item = pcBuffer.shift();
+          log.innerHTML += `Consumer-${id}: Consumed ${item} | Buffer: ${pcBuffer.length}/${pcSize}<br>`;
+          empty++; mutex = 1;
+        } else {
+          log.innerHTML += `<span style="color:orange">Consumer-${id}: Buffer empty / locked, waiting...</span><br>`;
+        }
+      } else {
+        if (pcBuffer.length > 0) {
+          const item = pcBuffer.shift();
+          log.innerHTML += `Consumer-${id}: Consumed ${item} | Buffer: ${pcBuffer.length}/${pcSize}<br>`;
+        } else {
+          log.innerHTML += `<span style="color:red">Consumer-${id}: ERROR - Buffer underflow risk!</span><br>`;
+        }
+      }
+      updatePCDisplay();
+      log.scrollTop = log.scrollHeight;
+    }
+
+    // Start multiple producers & consumers with different intervals
+    pcTimers.push(setInterval(() => producer(1), 700));
+    pcTimers.push(setInterval(() => producer(2), 1100));
+    pcTimers.push(setInterval(() => consumer(1), 900));
+    pcTimers.push(setInterval(() => consumer(2), 1300));
+  }
+
+  function updatePCDisplay() {
+    const bufDiv = document.getElementById('pc-buffer');
+    const size = parseInt(document.getElementById('pc-size').value);
+    let html = '';
+    for (let i = 0; i < size; i++) {
+      if (i < pcBuffer.length) html += `<div class="cell filled">${pcBuffer[i]}</div>`;
+      else html += `<div class="cell">Empty</div>`;
+    }
+    bufDiv.innerHTML = html;
+  }
+
+  function stopPC() {
+    pcRunning = false;
+    pcTimers.forEach(t => clearInterval(t));
+    pcTimers = [];
+  }
+
+  // initialize buffer view
+  updatePCDisplay();
+
+  // -------------------- DINING PHILOSOPHERS --------------------
+  let philTimers = [];
+  let philRunning = false;
+  let forks = [true, true, true, true, true];
+  let philState = ['Thinking','Thinking','Thinking','Thinking','Thinking'];
+
+  function startPhilosophers(useAsymmetric) {
+    stopPhilosophers();
+    philRunning = true;
+    forks = [true, true, true, true, true];
+    philState = ['Thinking','Thinking','Thinking','Thinking','Thinking'];
+    const log = document.getElementById('phil-log');
+    log.innerHTML = useAsymmetric
+      ? '<span style="color:#8f8">✓ Running with Asymmetric solution (avoid deadlock)</span><br>'
+      : '<span style="color:#f88">⚠ Running naive version (deadlock possible)</span><br>';
+    updatePhilTable();
+
+    function philosopher(i) {
+      if (!philRunning) return;
+      const left = i;
+      const right = (i + 1) % 5;
+
+      if (philState[i] === 'Thinking') {
+        log.innerHTML += `Philosopher ${i}: Thinking...<br>`;
+        philState[i] = 'Hungry';
+      } else if (philState[i] === 'Hungry') {
+        if (useAsymmetric) {
+          // last philosopher picks right fork first
+          if (i === 4) {
+            if (forks[right] && forks[left]) {
+              forks[right] = false; forks[left] = false; philState[i] = 'Eating';
+              log.innerHTML += `<span style="color:#8f8">Philosopher ${i}: Picked forks ${right} & ${left}, EATING</span><br>`;
+            } else {
+              log.innerHTML += `Philosopher ${i}: Waiting for forks...<br>`;
+            }
+          } else {
+            if (forks[left] && forks[right]) {
+              forks[left] = false; forks[right] = false; philState[i] = 'Eating';
+              log.innerHTML += `<span style="color:#8f8">Philosopher ${i}: Picked forks ${left} & ${right}, EATING</span><br>`;
+            } else {
+              log.innerHTML += `Philosopher ${i}: Waiting for forks...<br>`;
+            }
+          }
+        } else {
+          // naive - pick left then right (deadlock risk)
+          if (forks[left] && forks[right]) {
+            forks[left] = false; forks[right] = false; philState[i] = 'Eating';
+            log.innerHTML += `<span style="color:#8f8">Philosopher ${i}: Picked forks ${left} & ${right}, EATING</span><br>`;
+          } else {
+            log.innerHTML += `<span style="color:orange">Philosopher ${i}: Waiting for forks...</span><br>`;
+          }
+        }
+      } else if (philState[i] === 'Eating') {
+        forks[left] = true; forks[right] = true;
+        philState[i] = 'Thinking';
+        log.innerHTML += `Philosopher ${i}: Released forks ${left} & ${right}<br>`;
+      }
+      updatePhilTable();
+      log.scrollTop = log.scrollHeight;
+    }
+
+    // schedule philosophers with slightly different intervals
+    for (let i = 0; i < 5; i++) {
+      philTimers.push(setInterval(() => philosopher(i), 900 + i * 180));
+    }
+  }
+
+  function updatePhilTable() {
+    const tbody = document.getElementById('phil-status');
+    let html = '';
+    for (let i = 0; i < 5; i++) {
+      const left = i;
+      const right = (i + 1) % 5;
+      const color = philState[i] === 'Eating' ? 'limegreen' : philState[i] === 'Hungry' ? 'orange' : '#9fb';
+      html += `<tr>
+        <td>Philosopher ${i}</td>
+        <td style="color:${color};font-weight:700">${philState[i]}</td>
+        <td>${forks[left] ? '✓ Free' : '✗ Taken'}</td>
+        <td>${forks[right] ? '✓ Free' : '✗ Taken'}</td>
+      </tr>`;
+    }
+    tbody.innerHTML = html;
+  }
+
+  function stopPhilosophers() {
+    philRunning = false;
+    philTimers.forEach(t => clearInterval(t));
+    philTimers = [];
+  }
+
+  // ensure table initialized
+  updatePhilTable();
+
+  // -------------------- READERS-WRITERS --------------------
+  let rwTimers = [];
+  let rwRunning = false;
+  let dbValue = 0;
+  let readerCount = 0;
+  let writerActive = false;
+
+  function startRW(useLock) {
+    stopRW();
+    rwRunning = true; dbValue = 0; readerCount = 0; writerActive = false;
+    const log = document.getElementById('rw-log');
+    log.innerHTML = useLock
+      ? '<span style="color:#8f8">✓ Read-Write lock enabled</span><br>'
+      : '<span style="color:#f88">⚠ No lock (race condition possible)</span><br>';
+    updateRWDisplay();
+
+    function reader(id) {
+      if (!rwRunning) return;
+      if (useLock) {
+        if (!writerActive) {
+          readerCount++;
+          const val = dbValue;
+          log.innerHTML += `<span style="color:#8cf">Reader ${id}: Read ${val} | active readers: ${readerCount}</span><br>`;
+          setTimeout(() => { readerCount--; updateRWDisplay(); }, 600);
+        } else {
+          log.innerHTML += `<span style="color:orange">Reader ${id}: Waiting for writer...</span><br>`;
+        }
+      } else {
+        // unsafe read
+        readerCount++;
+        const val = dbValue;
+        log.innerHTML += `<span style="color:#8cf">Reader ${id}: Read ${val}</span><br>`;
+        setTimeout(() => { readerCount--; updateRWDisplay(); }, 600);
+      }
+      updateRWDisplay();
+      log.scrollTop = log.scrollHeight;
+    }
+
+    function writer(id) {
+      if (!rwRunning) return;
+      if (useLock) {
+        if (readerCount === 0 && !writerActive) {
+          writerActive = true;
+          dbValue += 10;
+          log.innerHTML += `<span style="color:#8f8;font-weight:700">Writer ${id}: Wrote ${dbValue}</span><br>`;
+          setTimeout(() => { writerActive = false; updateRWDisplay(); }, 900);
+        } else {
+          log.innerHTML += `<span style="color:orange">Writer ${id}: Waiting for exclusive access...</span><br>`;
+        }
+      } else {
+        // unsafe write
+        dbValue += 10;
+        log.innerHTML += `<span style="color:#f88">Writer ${id}: Wrote ${dbValue} (RISK)</span><br>`;
+      }
+      updateRWDisplay();
+      log.scrollTop = log.scrollHeight;
+    }
+
+    // schedule readers and writers
+    rwTimers.push(setInterval(() => reader(1), 700));
+    rwTimers.push(setInterval(() => reader(2), 950));
+    rwTimers.push(setInterval(() => reader(3), 1150));
+    rwTimers.push(setInterval(() => writer(1), 1600));
+    rwTimers.push(setInterval(() => writer(2), 2100));
+  }
+
+  function updateRWDisplay() {
+    document.getElementById('rw-value').innerText = dbValue;
+    document.getElementById('rw-readers').innerText = readerCount;
+    document.getElementById('rw-writers').innerText = writerActive ? '1' : '0';
+  }
+
+  function stopRW() {
+    rwRunning = false;
+    rwTimers.forEach(t => clearInterval(t));
+    rwTimers = [];
+  }
+
+  // keep some cleanup on page hide
+  window.addEventListener('beforeunload', () => {
+    stopPC(); stopPhilosophers(); stopRW();
+  });
+</script>
+<!-- Documentation Panel -->
+<section class="panel" style="margin:2em auto;max-width:900px;text-align:left;">
+  <h2 style="cursor:pointer" onclick="toggleDoc(this)">
+    📄 Documentation <span style="font-size:0.8em;color:#aaa">(click to expand)</span>
+  </h2>
+  <div class="doc-content">
+     <p><b>Approach:</b> We implemented three classic synchronization problems: Producer–Consumer, Dining Philosophers, and Readers–Writers. Each one can be run in unsafe mode (to show the issue) and in safe mode with semaphore/lock solutions.</p>
+    <p><b>Logic:</b> In Producer–Consumer, producers and consumers share a bounded buffer. In Dining Philosophers, each philosopher alternates between thinking and eating using two forks. In Readers–Writers, multiple readers can read but writers need exclusive access. JavaScript intervals simulate concurrent activity, and logs show what happens step by step.</p>
+    <p><b>Observations:</b> Without synchronization, errors like buffer overflow/underflow, deadlock, and race conditions occur. With proper locks and semaphore solutions, execution becomes safe. These simulations directly show why synchronization is necessary in operating systems.</p>
+  </div>
+</section>
+
+<style>
+.doc-content {
+  max-height: 0;
+  overflow: hidden;
+  transition: max-height 0.6s ease, padding 0.3s ease;
+  font-size: 0.95em;
+  line-height: 1.6;
+  color: #cde;
+  padding: 0 0.5em;
+}
+.doc-content.open {
+  max-height: 500px; /* enough to fit the content */
+  padding: 0.8em 0.5em;
+}
+</style>
+
+<script>
+function toggleDoc(header){
+  const content = header.nextElementSibling;
+  content.classList.toggle("open");
+}
+</script>
+
+</body>
+</html>

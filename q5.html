@@ -1,0 +1,279 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+  <meta charset="UTF-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1.0">
+  <title>Q5 – Real-Time Scheduling Simulator</title>
+  <link href="https://fonts.googleapis.com/css2?family=Orbitron:wght@600&display=swap" rel="stylesheet">
+  <style>
+    body {
+      margin: 0;
+      font-family: 'Orbitron', sans-serif;
+      background: radial-gradient(circle at top, #0d0d2b, #000);
+      color: #e0e0e0;
+      text-align: center;
+    }
+    header {
+      padding: 1.5em;
+      color: cyan;
+      text-shadow: 0 0 15px cyan, 0 0 25px #0ff;
+      border-bottom: 2px solid cyan;
+    }
+    section {
+      margin: 2em auto;
+      padding: 2em;
+      max-width: 1000px;
+      background: rgba(20,20,40,0.85);
+      border: 2px solid cyan;
+      border-radius: 12px;
+      box-shadow: 0 0 20px cyan;
+    }
+    h2 { color: cyan; text-shadow: 0 0 10px cyan; }
+    input {
+      padding: 0.5em;
+      margin: 0.5em;
+      border: 2px solid cyan;
+      border-radius: 6px;
+      background: #111;
+      color: cyan;
+    }
+    .btn {
+      padding: 0.6em 1.2em;
+      margin: 0.5em;
+      border: 2px solid cyan;
+      background: black;
+      color: cyan;
+      cursor: pointer;
+      transition: 0.3s;
+    }
+    .btn:hover { background: cyan; color: black; box-shadow: 0 0 20px cyan; }
+    .timeline {
+      display: flex;
+      margin-top: 1em;
+      border: 1px solid cyan;
+      border-radius: 6px;
+      overflow: hidden;
+      font-size: 0.8em;
+    }
+    .slot {
+      flex: 1;
+      border-right: 1px solid #111;
+      padding: 0.3em;
+      text-align: center;
+      font-weight: bold;
+    }
+    .console {
+      text-align: left;
+      background: #111;
+      border: 1px solid cyan;
+      border-radius: 6px;
+      padding: 1em;
+      margin-top: 1em;
+      height: 200px;
+      overflow-y: auto;
+      font-family: monospace;
+      font-size: 0.9em;
+      color: #0ff;
+    }
+    a.back {
+      display: inline-block;
+      margin-top: 1em;
+      color: cyan;
+      text-decoration: none;
+      border: 1px solid cyan;
+      padding: 0.5em 1em;
+      border-radius: 6px;
+    }
+    a.back:hover { background: cyan; color: black; }
+  </style>
+</head>
+<body>
+
+<header>
+  <h1>⚡ Q5: Real-Time Scheduling (RMS & EDF) + Threads</h1>
+</header>
+
+<section>
+  <h2>🚀 Rate Monotonic Scheduling (RMS)</h2>
+  <input type="text" id="rms-name" placeholder="Task Name" value="T1">
+  <input type="number" id="rms-exec" placeholder="Execution" value="2">
+  <input type="number" id="rms-period" placeholder="Period" value="5">
+  <button class="btn" onclick="addTask('rms')">Add Task</button>
+  <button class="btn" onclick="runRMS()">Run RMS</button>
+  <button class="btn" onclick="clearTasks('rms')">Clear</button>
+  <div id="rms-tasks"></div>
+  <div id="rms-output"></div>
+</section>
+
+<section>
+  <h2>🛰️ Earliest Deadline First (EDF)</h2>
+  <input type="text" id="edf-name" placeholder="Task Name" value="T1">
+  <input type="number" id="edf-exec" placeholder="Execution" value="2">
+  <input type="number" id="edf-period" placeholder="Period" value="5">
+  <button class="btn" onclick="addTask('edf')">Add Task</button>
+  <button class="btn" onclick="runEDF()">Run EDF</button>
+  <button class="btn" onclick="clearTasks('edf')">Clear</button>
+  <div id="edf-tasks"></div>
+  <div id="edf-output"></div>
+</section>
+
+<section>
+  <h2>🖥️ Thread Simulation</h2>
+  <div style="display:flex; gap:2em; justify-content:center; flex-wrap:wrap;">
+    <div>
+      <h3>User-Level Threads</h3>
+      <button class="btn" onclick="runUserThreads()">Run</button>
+      <div id="user-output" class="console"></div>
+    </div>
+    <div>
+      <h3>Kernel-Level Threads</h3>
+      <button class="btn" onclick="runKernelThreads()">Run</button>
+      <div id="kernel-output" class="console"></div>
+    </div>
+  </div>
+</section>
+
+<section>
+  <a href="index.html" class="back">⬅ Back to Dashboard</a>
+</section>
+
+<script>
+let rmsTasks = [], edfTasks = [];
+
+// Add task
+function addTask(type) {
+  const name = document.getElementById(type+"-name").value;
+  const exec = parseInt(document.getElementById(type+"-exec").value);
+  const period = parseInt(document.getElementById(type+"-period").value);
+  if (!name || exec <= 0 || period <= 0) return alert("Invalid task!");
+
+  const task = { name, exec, period };
+  if (type === "rms") rmsTasks.push(task); else edfTasks.push(task);
+  displayTasks(type);
+}
+
+// Show tasks
+function displayTasks(type) {
+  const tasks = type === "rms" ? rmsTasks : edfTasks;
+  let html = "<h4>Added Tasks:</h4><ul>";
+  tasks.forEach(t => {
+    html += `<li>${t.name}: Execution=${t.exec}, Period=${t.period}</li>`;
+  });
+  html += "</ul>";
+  document.getElementById(type+"-tasks").innerHTML = html;
+}
+
+// Clear
+function clearTasks(type) {
+  if (type === "rms") rmsTasks = []; else edfTasks = [];
+  document.getElementById(type+"-tasks").innerHTML = "";
+  document.getElementById(type+"-output").innerHTML = "";
+}
+
+// RMS
+function runRMS() {
+  if (rmsTasks.length === 0) return alert("Add tasks first!");
+  const sorted = [...rmsTasks].sort((a,b)=>a.period-b.period);
+  const simTime = 20, schedule = [];
+  let taskStates = sorted.map(t=>({...t, remaining:0, nextRelease:0}));
+
+  for (let time=0; time<simTime; time++) {
+    taskStates.forEach(s=>{ if (time===s.nextRelease){s.remaining=s.exec; s.nextRelease=time+s.period;} });
+    let executed="IDLE";
+    for (let s of taskStates){ if (s.remaining>0){executed=s.name; s.remaining--; break;} }
+    schedule.push({time,task:executed});
+  }
+  displaySchedule("rms",schedule);
+}
+
+// EDF
+function runEDF() {
+  if (edfTasks.length === 0) return alert("Add tasks first!");
+  const simTime=20,schedule=[];
+  let taskStates=edfTasks.map(t=>({...t,remaining:0,nextRelease:0,deadline:0}));
+
+  for (let time=0; time<simTime; time++) {
+    taskStates.forEach(s=>{ if(time===s.nextRelease){s.remaining=s.exec; s.deadline=time+s.period; s.nextRelease=time+s.period;} });
+    let selected=null, earliest=Infinity;
+    taskStates.forEach(s=>{ if(s.remaining>0&&s.deadline<earliest){earliest=s.deadline; selected=s;} });
+    if (selected){schedule.push({time,task:selected.name}); selected.remaining--;}
+    else schedule.push({time,task:"IDLE"});
+  }
+  displaySchedule("edf",schedule);
+}
+
+// Display timeline
+function displaySchedule(type,schedule){
+  let html="<h4>Schedule Timeline:</h4><div class='timeline'>";
+  schedule.forEach(s=>{
+    const color = s.task==="IDLE"?"#333":"#0ff";
+    html += `<div class="slot" style="background:${color}">${s.task}<br><small>${s.time}</small></div>`;
+  });
+  html+="</div>";
+  document.getElementById(type+"-output").innerHTML=html;
+}
+
+// User threads
+function runUserThreads(){
+  const out=document.getElementById("user-output"); out.innerHTML="";
+  const threads=["Thread-A","Thread-B","Thread-C"]; let count=0;
+  function step(){ if(count>=9)return;
+    const th=threads[count%3];
+    out.innerHTML+=`[Time ${count}] ${th} executing<br>`; out.scrollTop=out.scrollHeight;
+    count++; setTimeout(step,400);
+  }
+  step();
+}
+
+// Kernel threads
+function runKernelThreads(){
+  const out=document.getElementById("kernel-output"); out.innerHTML="";
+  const threads=["Thread-X","Thread-Y","Thread-Z"];
+  threads.forEach((th,i)=>{
+    setTimeout(()=>{
+      let iter=0;
+      const interval=setInterval(()=>{
+        out.innerHTML+=`[${th}] Iteration ${iter+1}<br>`; out.scrollTop=out.scrollHeight;
+        iter++; if(iter>=3)clearInterval(interval);
+      },500);
+    },i*200);
+  });
+}
+</script>
+<!-- Documentation Panel -->
+<section class="panel" style="margin:2em auto;max-width:900px;text-align:left;">
+  <h2 style="cursor:pointer" onclick="toggleDoc(this)">
+    📄 Documentation <span style="font-size:0.8em;color:#aaa">(click to expand)</span>
+  </h2>
+  <div class="doc-content">
+   <p><b>Approach:</b> We designed a simulator to demonstrate real-time scheduling algorithms Rate Monotonic Scheduling (RMS) and Earliest Deadline First (EDF). We also added a small demo to compare user-level vs kernel-level threads.</p>
+    <p><b>Logic:</b> RMS assigns higher priority to tasks with smaller periods. EDF dynamically selects the task with the earliest deadline at each step. The timeline visualization shows how tasks get CPU time. For threads, user-level threads are shown executing cooperatively, while kernel-level threads are scheduled preemptively by the OS.</p>
+    <p><b>Observations:</b> RMS is simple but works only if utilization is under a certain limit, while EDF can handle higher utilization but is more complex. The thread demo clearly shows how kernel threads provide better concurrency at the cost of overhead.</p>
+  </div>
+</section>
+
+<style>
+.doc-content {
+  max-height: 0;
+  overflow: hidden;
+  transition: max-height 0.6s ease, padding 0.3s ease;
+  font-size: 0.95em;
+  line-height: 1.6;
+  color: #cde;
+  padding: 0 0.5em;
+}
+.doc-content.open {
+  max-height: 500px; /* enough to fit the content */
+  padding: 0.8em 0.5em;
+}
+</style>
+
+<script>
+function toggleDoc(header){
+  const content = header.nextElementSibling;
+  content.classList.toggle("open");
+}
+</script>
+
+</body>
+</html>
