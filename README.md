@@ -44,16 +44,9 @@ This project demonstrates **key OS concepts** in a visual and interactive way.
 - ✅ Interactive **simulators** for OS concepts  
 - ✅ **Collapsible documentation** inside each page  
 - ✅ **Team info with LinkedIn/GitHub modal popup**  
-
----
-
-## 📷 Adding Screenshots
-- Take screenshots of your project running (press **PrtScn** or `Win + Shift + S` on Windows).  
-- Save them inside a folder: `assets/screenshots/`  
-- Replace the placeholders in this README with your actual filenames.  
-
 ---
 
 🔮 *Made with hard work, teamwork, and a touch of futuristic magic.*
+
 
 
